@@ -62,10 +62,18 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
 {
     std::cout << "We are in setTag, fileName = "<< fileName \
                 << " tagToAttach = " << tagToAttach << std::endl;
+    std::vector<std::string> currentTags, currentCategories;
+    //get already attached tags
+    getTags(fileName, currentTags);
+    for (auto ct:currentTags)
+    {
+        currentCategories.push_back(tagsAndCategories[ct]);
+        std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
+    }
     return ExitCode::OK;
 }
 
-ExitCode getTags(const std::string filePath, std::vector<std::string> tags)
+ExitCode getTags(const std::string filePath, std::vector<std::string> &tags)
 {
     char * tagsString;
     tags.clear();

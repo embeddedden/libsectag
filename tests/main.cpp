@@ -6,7 +6,7 @@ int main ()
 {
     ExitCode res;
     initializeTags();
-    res = setTag ("longfilename", "tagname");
+    res = setTag ("/home/guest/Pictures/picture", "Private");
     std::vector <std::string> a;
     getTags("/home/guest/Pictures/picture", a);
     if (res != ExitCode::OK)
