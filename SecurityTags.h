@@ -8,6 +8,8 @@
 //ExitCodes as temporary solution
 enum class ExitCode {OK, FAILURE};
 
+ExitCode initializeTags();
+
 ExitCode setTag(std::string fileName, std::string tagToAttach);
 
 ExitCode getTags(const std::string, std::vector<std::string>
