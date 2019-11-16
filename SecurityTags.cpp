@@ -60,16 +60,31 @@ static ExitCode parseSetransLine(const std::string &setransLine)
 
 ExitCode setTag(std::string fileName, std::string tagToAttach)
 {
+    std::regex contextFirstHalfRegex("(\\w+:\\w+:\\w+:)");
+    std::smatch m;
+    std::string newContext = "s2:c0";
+    char * fileContext;
     std::cout << "We are in setTag, fileName = "<< fileName \
                 << " tagToAttach = " << tagToAttach << std::endl;
     std::vector<std::string> currentTags, currentCategories;
+    lgetfilecon(fileName.c_str(), &fileContext);
+    std::string s(fileContext);
+    std::cout << "[setTag]Security context of " << fileName << " is:" << std::endl;
+    std::cout << fileContext << std::endl;
+    if (std::regex_search(s, m, contextFirstHalfRegex))
+    {
+        std::cout << "First half " << m[0] << std::endl;
+        newContext.insert(0, m[0]);
+    }
     //get already attached tags
     getTags(fileName, currentTags);
     for (auto ct:currentTags)
     {
         currentCategories.push_back(tagsAndCategories[ct]);
         std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
+        newContext.append(","+tagsAndCategories[ct]);
     }
+    std::cout << "newContext: " << newContext << std::endl;
     return ExitCode::OK;
 }
 
@@ -77,7 +92,7 @@ ExitCode getTags(const std::string filePath, std::vector<std::string> &tags)
 {
     char * tagsString;
     tags.clear();
-    // Some check is required here
+    // Some check is required here, need to free tagsString?
     lgetfilecon(filePath.c_str(), &tagsString);
     std::cout << "Security context of " << filePath << " is:" << std::endl;
     std::cout << tagsString << std::endl;
