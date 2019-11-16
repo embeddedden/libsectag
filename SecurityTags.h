@@ -12,6 +12,8 @@ ExitCode initializeTags();
 
 ExitCode setTag(std::string fileName, std::string tagToAttach);
 
+ExitCode createNewTag(std::string newTag);
+
 ExitCode getTags(const std::string, std::vector<std::string> &tags);
 
 #endif //SECURITYTAGS_H

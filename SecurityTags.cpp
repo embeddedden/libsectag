@@ -75,6 +75,7 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
     {
         std::cout << "First half " << m[0] << std::endl;
         newContext.insert(0, m[0]);
+        std::cout << "New context: " << newContext << std::endl;
     }
     //get already attached tags
     getTags(fileName, currentTags);
@@ -84,7 +85,48 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
         std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
         newContext.append(","+tagsAndCategories[ct]);
     }
-    std::cout << "newContext: " << newContext << std::endl;
+    std::cout << "New context with existing tags: " << newContext << std::endl;
+    //Look for a tag in a .conf file
+    auto it = tagsAndCategories.find(tagToAttach);
+    if (it != tagsAndCategories.end())
+    {
+        newContext.append(","+tagsAndCategories[tagToAttach]);
+    }
+    else
+    {
+        if (createNewTag(tagToAttach) == ExitCode::OK)
+            newContext.append(","+tagsAndCategories[tagToAttach]);
+        else {
+            return ExitCode::FAILURE;
+        }
+    }
+    std::cout << "New context with the new tag: " << newContext << std::endl;
+    lsetfilecon(fileName.c_str(), newContext.c_str());
+    return ExitCode::OK;
+}
+
+ExitCode createNewTag(std::string newTag)
+{
+    std::ofstream setransFile;
+    //TODO: change to not fixed file name
+    setransFile.open("/etc/selinux/refpolicy_mls/setrans.d/security_tags.conf",\
+                     std::ofstream::out|std::ofstream::app);
+    std::regex findNumberInCat("\\d+");
+    std::smatch m;
+    uint32_t biggestCategory=0;
+    for (auto p:tagsAndCategories)
+    {
+        if (std::regex_search(p.second, m, findNumberInCat))
+            //FIXME: can be enhanced (avoid two function calls)
+            if (biggestCategory < std::stoul(m[0]))
+                biggestCategory = std::stoi(m[0]);
+    }
+    std::cout << "The biggest category is: "<< biggestCategory<<std::endl;
+    //TODO: should check correctnes of the newTag
+    setransFile << "c" << biggestCategory+1 << "=" <<newTag;
+    setransFile.close();
+    tagsAndCategories[newTag]="c"+std::to_string(biggestCategory+1);
+    std::cout << "New Category - "<< tagsAndCategories[newTag] << std::endl;
     return ExitCode::OK;
 }
 
