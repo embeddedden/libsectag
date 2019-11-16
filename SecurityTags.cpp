@@ -4,6 +4,7 @@
 #include <regex>
 #include <map>
 #include <fstream>
+#include <cstdio>
 
 static ExitCode parseContextForTags(const std::string *context, std::vector<std::string> *tags);
 static ExitCode parseSetransLine(const std::string &setransLine);
@@ -108,6 +109,8 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
 ExitCode createNewTag(std::string newTag)
 {
     std::ofstream setransFile;
+    //should make mcstrans reread values with...d-bus?
+    std::string restartMcstrans("systemctl restart mcstrans");
     //TODO: change to not fixed file name
     setransFile.open("/etc/selinux/refpolicy_mls/setrans.d/security_tags.conf",\
                      std::ofstream::out|std::ofstream::app);
@@ -123,8 +126,11 @@ ExitCode createNewTag(std::string newTag)
     }
     std::cout << "The biggest category is: "<< biggestCategory<<std::endl;
     //TODO: should check correctnes of the newTag
-    setransFile << "c" << biggestCategory+1 << "=" <<newTag;
+    setransFile << "c" << biggestCategory+1 << "=" <<newTag<<std::endl;
     setransFile.close();
+    //restart mcstrans
+    FILE * pipe = popen(restartMcstrans.c_str(), "r");
+    pclose(pipe);
     tagsAndCategories[newTag]="c"+std::to_string(biggestCategory+1);
     std::cout << "New Category - "<< tagsAndCategories[newTag] << std::endl;
     return ExitCode::OK;
