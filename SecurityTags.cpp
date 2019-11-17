@@ -68,6 +68,7 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
     std::cout << "We are in setTag, fileName = "<< fileName \
                 << " tagToAttach = " << tagToAttach << std::endl;
     std::vector<std::string> currentTags, currentCategories;
+    //need to free it?
     lgetfilecon(fileName.c_str(), &fileContext);
     std::string s(fileContext);
     std::cout << "[setTag]Security context of " << fileName << " is:" << std::endl;
@@ -85,6 +86,12 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
         currentCategories.push_back(tagsAndCategories[ct]);
         std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
         newContext.append(","+tagsAndCategories[ct]);
+    }
+    if (std::find(currentTags.begin(), currentTags.end(), tagToAttach) != \
+        currentTags.end())
+    {
+        std::cout << "Tag is already attached" << std::endl;
+        return ExitCode::OK;
     }
     std::cout << "New context with existing tags: " << newContext << std::endl;
     //Look for a tag in a .conf file
