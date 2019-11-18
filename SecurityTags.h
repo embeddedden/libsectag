@@ -10,9 +10,11 @@ enum class ExitCode {OK, FAILURE};
 
 ExitCode initializeTags();
 
-ExitCode setTag(std::string fileName, std::string tagToAttach);
+ExitCode addTag(std::string fileName, std::string tagToAttach);
 
 ExitCode createNewTag(std::string newTag);
+
+ExitCode removeTag(std::string fileName, std::string tagToRemove);
 
 ExitCode getTags(const std::string, std::vector<std::string> &tags);
 

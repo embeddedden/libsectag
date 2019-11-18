@@ -59,26 +59,34 @@ static ExitCode parseSetransLine(const std::string &setransLine)
     return ExitCode::OK;
 }
 
-ExitCode setTag(std::string fileName, std::string tagToAttach)
+static ExitCode getContextFirstPart(const std::string *fileName, std::string &contextFirstHalf)
 {
     std::regex contextFirstHalfRegex("(\\w+:\\w+:\\w+:)");
     std::smatch m;
     std::string newContext = "s2:c0";
     char * fileContext;
-    std::cout << "We are in setTag, fileName = "<< fileName \
-                << " tagToAttach = " << tagToAttach << std::endl;
-    std::vector<std::string> currentTags, currentCategories;
     //need to free it?
-    lgetfilecon(fileName.c_str(), &fileContext);
+    lgetfilecon(fileName->c_str(), &fileContext);
     std::string s(fileContext);
-    std::cout << "[setTag]Security context of " << fileName << " is:" << std::endl;
-    std::cout << fileContext << std::endl;
     if (std::regex_search(s, m, contextFirstHalfRegex))
     {
         std::cout << "First half " << m[0] << std::endl;
         newContext.insert(0, m[0]);
         std::cout << "New context: " << newContext << std::endl;
     }
+    contextFirstHalf.assign(newContext);
+
+    return ExitCode::OK;
+}
+
+ExitCode addTag(std::string fileName, std::string tagToAttach)
+{
+    std::string newContext = "s2:c0";
+    std::cout << "We are in setTag, fileName = "<< fileName \
+                << " tagToAttach = " << tagToAttach << std::endl;
+    std::vector<std::string> currentTags, currentCategories;
+
+    getContextFirstPart(&fileName, newContext);
     //get already attached tags
     getTags(fileName, currentTags);
     for (auto ct:currentTags)
@@ -109,7 +117,14 @@ ExitCode setTag(std::string fileName, std::string tagToAttach)
         }
     }
     std::cout << "New context with the new tag: " << newContext << std::endl;
+    //Check exit code
     lsetfilecon(fileName.c_str(), newContext.c_str());
+    return ExitCode::OK;
+}
+
+ExitCode removeTag(std::string /*fileName*/, std::string /*tagToRemove*/)
+{
+    std::vector <std::string> currentTags, currentCategories;
     return ExitCode::OK;
 }
 
