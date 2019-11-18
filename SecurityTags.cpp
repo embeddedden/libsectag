@@ -63,7 +63,7 @@ static ExitCode getContextFirstPart(const std::string *fileName, std::string &co
 {
     std::regex contextFirstHalfRegex("(\\w+:\\w+:\\w+:)");
     std::smatch m;
-    std::string newContext = "s2:c0";
+    std::string newContext = "s2:c0"; //we use this value for Security Tags mechanism
     char * fileContext;
     //need to free it?
     lgetfilecon(fileName->c_str(), &fileContext);
@@ -82,7 +82,7 @@ static ExitCode getContextFirstPart(const std::string *fileName, std::string &co
 ExitCode addTag(std::string fileName, std::string tagToAttach)
 {
     std::string newContext = "s2:c0";
-    std::cout << "We are in setTag, fileName = "<< fileName \
+    std::cout << "We are in addTag, fileName = "<< fileName \
                 << " tagToAttach = " << tagToAttach << std::endl;
     std::vector<std::string> currentTags, currentCategories;
 
@@ -122,9 +122,27 @@ ExitCode addTag(std::string fileName, std::string tagToAttach)
     return ExitCode::OK;
 }
 
-ExitCode removeTag(std::string /*fileName*/, std::string /*tagToRemove*/)
+ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove)
 {
-    std::vector <std::string> currentTags, currentCategories;
+    std::string newContext = "s2:c0";
+    std::cout << "We are in removeTag, fileName = "<< fileName \
+                << " tagToRemove = " << tagToRemove << std::endl;
+    std::vector<std::string> currentTags, currentCategories;
+    getContextFirstPart(&fileName, newContext);
+    //get already attached tags
+    getTags(fileName, currentTags);
+    for (auto ct:currentTags)
+    {
+        if (ct != tagToRemove)
+        {
+            currentCategories.push_back(tagsAndCategories[ct]);
+            std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
+            newContext.append(","+tagsAndCategories[ct]);
+        }
+    }
+    std::cout << "New context without the tag: " << newContext << std::endl;
+    //Check exit code
+    lsetfilecon(fileName.c_str(), newContext.c_str());
     return ExitCode::OK;
 }
 

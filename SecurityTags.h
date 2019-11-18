@@ -14,7 +14,7 @@ ExitCode addTag(std::string fileName, std::string tagToAttach);
 
 ExitCode createNewTag(std::string newTag);
 
-ExitCode removeTag(std::string fileName, std::string tagToRemove);
+ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove);
 
 ExitCode getTags(const std::string, std::vector<std::string> &tags);
 
