@@ -33,6 +33,16 @@ ExitCode initializeTags()
     return ExitCode::OK;
 }
 
+ExitCode getAllPossibleTags(std::vector<std::string> &tags)
+{
+    tags.clear();
+    for (auto pr:tagsAndCategories)
+    {
+        tags.push_back(pr.first);
+    }
+    return ExitCode::OK;
+}
+
 //FIXME: unoptimized and naive version
 //function to parse setrans.conf lines, e.g. "c0=Private"
 static ExitCode parseSetransLine(const std::string &setransLine)

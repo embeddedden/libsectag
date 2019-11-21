@@ -18,4 +18,6 @@ ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove);
 
 ExitCode getTags(const std::string, std::vector<std::string> &tags);
 
+ExitCode getAllPossibleTags(std::vector<std::string> &tags);
+
 #endif //SECURITYTAGS_H
