@@ -16,7 +16,7 @@ ExitCode initializeTags()
     std::ifstream setransFile;
     std::string catString;
     //TODO: change to not fixed file name
-    setransFile.open("/etc/selinux/refpolicy_mls/setrans.d/security_tags.conf",\
+    setransFile.open("/etc/selinux/refpolicy_mcs/setrans.d/security_tags.conf",\
                      std::ifstream::in);
 
     std::getline(setransFile, catString);
@@ -73,7 +73,7 @@ static ExitCode getContextFirstPart(const std::string *fileName, std::string &co
 {
     std::regex contextFirstHalfRegex("(\\w+:\\w+:\\w+:)");
     std::smatch m;
-    std::string newContext = "s2:c0"; //we use this value for Security Tags mechanism
+    std::string newContext = "s0:"; //we use this value for Security Tags mechanism
     char * fileContext;
     //need to free it?
     lgetfilecon(fileName->c_str(), &fileContext);
@@ -91,7 +91,7 @@ static ExitCode getContextFirstPart(const std::string *fileName, std::string &co
 
 ExitCode addTag(std::string fileName, std::string tagToAttach)
 {
-    std::string newContext = "s2:c0";
+    std::string newContext = "s0:";
     std::cout << "We are in addTag, fileName = "<< fileName \
                 << " tagToAttach = " << tagToAttach << std::endl;
     std::vector<std::string> currentTags, currentCategories;
@@ -103,7 +103,11 @@ ExitCode addTag(std::string fileName, std::string tagToAttach)
     {
         currentCategories.push_back(tagsAndCategories[ct]);
         std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
-        newContext.append(","+tagsAndCategories[ct]);
+        if (newContext[newContext.length()-1] == ':')
+            newContext.append(tagsAndCategories[ct]);
+        else {
+            newContext.append(","+tagsAndCategories[ct]);
+        }
     }
     if (std::find(currentTags.begin(), currentTags.end(), tagToAttach) != \
         currentTags.end())
@@ -116,12 +120,20 @@ ExitCode addTag(std::string fileName, std::string tagToAttach)
     auto it = tagsAndCategories.find(tagToAttach);
     if (it != tagsAndCategories.end())
     {
-        newContext.append(","+tagsAndCategories[tagToAttach]);
+        if (newContext[newContext.length()-1] == ':')
+            newContext.append(tagsAndCategories[tagToAttach]);
+        else {
+            newContext.append(","+tagsAndCategories[tagToAttach]);
+        }
     }
     else
     {
         if (createNewTag(tagToAttach) == ExitCode::OK)
-            newContext.append(","+tagsAndCategories[tagToAttach]);
+            if (newContext[newContext.length()-1] == ':')
+                newContext.append(tagsAndCategories[tagToAttach]);
+            else {
+                newContext.append(","+tagsAndCategories[tagToAttach]);
+            }
         else {
             return ExitCode::FAILURE;
         }
@@ -134,7 +146,7 @@ ExitCode addTag(std::string fileName, std::string tagToAttach)
 
 ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove)
 {
-    std::string newContext = "s2:c0";
+    std::string newContext = "s0:";
     std::cout << "We are in removeTag, fileName = "<< fileName \
                 << " tagToRemove = " << tagToRemove << std::endl;
     std::vector<std::string> currentTags, currentCategories;
@@ -147,7 +159,11 @@ ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove)
         {
             currentCategories.push_back(tagsAndCategories[ct]);
             std::cout << tagsAndCategories[ct] <<"  "<<ct << std::endl;
-            newContext.append(","+tagsAndCategories[ct]);
+            if (newContext[newContext.length()-1] == ':')
+                newContext.append(tagsAndCategories[ct]);
+            else {
+                newContext.append(","+tagsAndCategories[ct]);
+            }
         }
     }
     std::cout << "New context without the tag: " << newContext << std::endl;
