@@ -166,6 +166,10 @@ ExitCode removeTag(const std::string &fileName, const std::string &tagToRemove)
             }
         }
     }
+    if (newContext[newContext.length()-1] == ':')
+    {
+        newContext[newContext.length()-1] = '\0';
+    }
     std::cout << "New context without the tag: " << newContext << std::endl;
     //Check exit code
     lsetfilecon(fileName.c_str(), newContext.c_str());
